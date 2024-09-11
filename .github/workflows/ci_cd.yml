@@ -57,6 +57,8 @@ jobs:
           distribution: 'adopt'
       - name: Run OWASP Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
+        env:
+          JAVA_HOME: /opt/jdk
         with:
           project: 'Task-Manager-using-Flask'
           path: '.'
@@ -70,9 +72,8 @@ jobs:
           name: Dependency-Check Report
           path: ${{github.workspace}}/reports
 
-
   open-pr-to-staging:
-    needs: test
+    needs: [test, sast, dependency-check]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev' && success()
     steps:
@@ -89,7 +90,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-dev:
-    needs: test
+    needs: [test, sast, dependency-check]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev'
     steps:
@@ -99,7 +100,7 @@ jobs:
         echo "Deploy to development environment"
 
   deploy-staging:
-    needs: test
+    needs: needs: [test, sast, dependency-check]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/staging'
     steps:
@@ -110,7 +111,7 @@ jobs:
         # Add your staging deployment steps here
 
   deploy-production:
-    needs: test
+    needs: needs: [test, sast, dependency-check]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
