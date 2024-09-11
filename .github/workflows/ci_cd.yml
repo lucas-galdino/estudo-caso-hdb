@@ -2,11 +2,11 @@ name: CI/CD
 
 on:
   push:
-    branches: [ main, dev, staging ]
+    branches: [ main, staging ]
     tags:
       - 'v*'
   pull_request:
-    branches: [ main, dev, staging ]
+    branches: [ main, staging ]
 
 permissions:
   pull-requests: write
@@ -88,16 +88,6 @@ jobs:
           pr_title: "Merge dev into staging"
           pr_body: "Automated PR to merge dev into staging after successful build and tests."
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy-dev:
-    needs: [test, sast, dependency-check]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev'
-    steps:
-    - uses: actions/checkout@v4
-    - name: Deploy to development
-      run: |
-        echo "Deploy to development environment"
 
   deploy-staging:
     needs: [test, sast, dependency-check]
