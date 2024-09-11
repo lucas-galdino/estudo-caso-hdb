@@ -67,7 +67,7 @@ jobs:
           --failOnCVSS 7
           --enableRetired
     - name: Upload Dependency-Check results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Dependency-Check Report
         path: ${{github.workspace}}/reports
