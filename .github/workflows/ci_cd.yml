@@ -22,7 +22,7 @@ jobs:
         pip install pytest
     - name: Run tests
       run: |
-        pytest tests/
+        pytest ./tests/
 
   deploy-dev:
     needs: test
