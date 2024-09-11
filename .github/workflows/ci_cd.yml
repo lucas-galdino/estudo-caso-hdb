@@ -45,30 +45,31 @@ jobs:
       with:
         targets: 'todo_project'
 
-dependency-check:
-  needs: test
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: actions/setup-java@v2
-      with:
-        java-version: '11'
-        distribution: 'adopt'
-    - name: Run OWASP Dependency-Check
-      uses: dependency-check/Dependency-Check_Action@main
-      with:
-        project: 'Task-Manager-using-Flask'
-        path: '.'
-        format: 'HTML'
-        args: >
-          --failOnCVSS 7
-          --enableRetired
-    - name: Upload Dependency-Check results
-      uses: actions/upload-artifact@v4
-      with:
-        name: Dependency-Check Report
-        path: ${{github.workspace}}/reports
+  dependency-check:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'Task-Manager-using-Flask'
+          path: '.'
+          format: 'HTML'
+          args: >
+            --failOnCVSS 7
+            --enableRetired
+      - name: Upload Dependency-Check results
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dependency-Check Report
+          path: ${{github.workspace}}/reports
+
 
   open-pr-to-staging:
     needs: test
