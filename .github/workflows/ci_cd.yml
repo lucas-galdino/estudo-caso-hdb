@@ -100,7 +100,7 @@ jobs:
         echo "Deploy to development environment"
 
   deploy-staging:
-    needs: needs: [test, sast, dependency-check]
+    needs: [test, sast, dependency-check]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/staging'
     steps:
