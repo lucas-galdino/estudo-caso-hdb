@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: [ dev, main, staging ]
+    branches: [ main, staging ]
     tags:
       - 'v*'
   pull_request:
@@ -102,11 +102,6 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: false
           allow_issue_writing: false
-      - name: Upload ZAP Scan Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: zap-scan-results
-          path: zap-report.html
       - name: Stop Docker container
         if: always()
         run: docker stop todo-container
