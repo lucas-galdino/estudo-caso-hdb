@@ -85,10 +85,48 @@ jobs:
         with:
           name: Dependency-Check Report
           path: ${{github.workspace}}/reports
-  
-  dast:
-    needs: [build, test]
+
+  open-pr-to-staging:
+    needs: [build, test, sast, dependency-check, dast]
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev' && success()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: "dev"
+          destination_branch: "staging"
+          pr_title: "Merge dev into staging"
+          pr_body: "Auto-generated PR to merge dev into staging after successfully passing all the tests."
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+  
+  create-review-env:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Review Environment
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          echo "Creating review environment for PR $PR_NUMBER"
+      - name: Comment PR with simulated environment URL
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Review environment created'
+            })
+  dast:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
     steps:
       - uses: actions/checkout@v4
       - name: Run Docker container
@@ -102,44 +140,3 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: false
           allow_issue_writing: false
-      - name: Stop Docker container
-        if: always()
-        run: docker stop todo-container
-
-  open-pr-to-staging:
-    needs: [build, test, sast, dependency-check]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' && success()
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Create Pull Request
-        uses: repo-sync/pull-request@v2
-        with:
-          source_branch: "dev"
-          destination_branch: "staging"
-          pr_title: "Merge dev into staging"
-          pr_body: "Automated PR to merge dev into staging after successful build and tests."
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy-staging:
-    needs: [build, test, sast, dependency-check]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging'
-    steps:
-    - uses: actions/checkout@v4
-    - name: Deploy to staging
-      run: |
-        echo "Deploy to staging environment"
-        # Add your staging deployment steps here
-
-  deploy-production:
-    needs: [build, test, sast, dependency-check]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-    - uses: actions/checkout@v4
-    - name: Deploy to production
-      run: |
-        echo "Deploy to production environment"
