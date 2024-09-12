@@ -91,11 +91,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check Docker status
+        run: |
+          docker info
+          docker ps
       - name: Run Docker container
         run: |
           docker pull ghcr.io/${{ github.repository }}/todo-app:${{ github.sha }}
           docker run -d -p 5000:5000 --name todo-container ghcr.io/${{ github.repository }}/todo-app:${{ github.sha }}
           sleep 20
+      - name: Check container status
+        run: |
+          docker ps
+          docker logs todo-container
+      - name: Test application accessibility
+        run: curl http://localhost:5000 || echo "Failed to access application"
       - name: Run ZAP Scan
         uses: zaproxy/action-full-scan@v0.10.0
         with:
