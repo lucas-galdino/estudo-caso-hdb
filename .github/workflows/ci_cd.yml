@@ -85,14 +85,14 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: false
           cmd_options: '-r zap_report.html'
-      - name: Stop Docker container
-        run: docker stop todo-container
       - name: Upload ZAP Scan Results
         uses: actions/upload-artifact@v3
         with:
           name: zap-scan-results
           path: zap_report.html
-
+      - name: Stop Docker container
+        run: docker stop todo-container
+        
   open-pr-to-staging:
     needs: [test, sast, dependency-check]
     runs-on: ubuntu-latest
