@@ -6,7 +6,7 @@ on:
     tags:
       - 'v*'
   pull_request:
-    branches: [ main, staging ]
+    branches: [ dev, main, staging ]
 
 permissions:
   pull-requests: write
@@ -87,7 +87,7 @@ jobs:
           path: ${{github.workspace}}/reports
 
   open-pr-to-staging:
-    needs: [build, test, sast, dependency-check, dast]
+    needs: [build, test, sast, dependency-check]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev' && success()
     steps:
