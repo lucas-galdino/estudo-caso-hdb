@@ -170,3 +170,11 @@ jobs:
       - name: Deploy staging
         run: |
           echo "Deploy app to staging"
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy prod
+        run: |
+          echo "Deploy app to prod"
