@@ -6,7 +6,7 @@ on:
     tags:
       - 'v*'
   pull_request:
-    branches: [ main, staging ]
+    branches: [ dev, main, staging ]
 
 permissions:
   pull-requests: write
@@ -148,4 +148,3 @@ jobs:
     - name: Deploy to production
       run: |
         echo "Deploy to production environment"
-        
