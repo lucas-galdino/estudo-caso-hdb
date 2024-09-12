@@ -141,7 +141,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Review environment created for PR to staging'
+              body: 'Review environment created'
             })
 
   dast:
@@ -161,3 +161,12 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: false
           allow_issue_writing: false
+          
+  deploy-staging:
+    needs: dast
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy staging
+        run: |
+          echo "Deploy app to staging"
