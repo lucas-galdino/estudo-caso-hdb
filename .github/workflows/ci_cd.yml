@@ -132,7 +132,7 @@ jobs:
           PR_NUMBER: ${{ github.event.number }}
         run: |
           echo "Creating review environment for PR $PR_NUMBER"
-      - name: Comment PR with simulated environment URL
+      - name: Comment PR with environment URL
         uses: actions/github-script@v7
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
@@ -145,6 +145,7 @@ jobs:
             })
 
   dast:
+    needs: [build, test]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
     steps:
