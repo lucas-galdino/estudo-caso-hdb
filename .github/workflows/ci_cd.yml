@@ -75,11 +75,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build and run Docker container
-        run: |
-          docker build -t todo-app .
-          docker run -d -p 5000:5000 --name todo-container todo-app
-          sleep 20
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: todo-app:latest
+      - name: Run Docker container
+        run: docker run -d -p 5000:5000 --name todo-container todo-app:latest
       - name: Run ZAP Scan
         uses: zaproxy/action-full-scan@v0.10.0
         with:
