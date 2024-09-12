@@ -102,10 +102,6 @@ jobs:
           pr_title: "Merge dev into staging"
           pr_body: "Auto-generated PR to merge dev into staging after successfully passing all the tests."
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update PR to trigger Create Review Environment
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          event-type: "update-pull-request"
   
   create-review-env:
     runs-on: ubuntu-latest
