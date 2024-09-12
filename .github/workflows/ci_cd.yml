@@ -17,19 +17,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Set up Docker Build
+      uses: docker/setup-buildx-action@v3
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
       with:
-        python-version: 3.x
-    - name: Install dependencies
+        context: .
+        load: true
+        tags: todo-app:test
+    - name: Run tests in Docker
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest
-    - name: Run tests
-      run: |
-        cd todo_project
-        pytest tests/
+        docker run --rm todo-app:test pytest todo_project/tests/
 
   sast:
     needs: test
