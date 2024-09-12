@@ -102,14 +102,11 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: false
           allow_issue_writing: false
-      - name: Retrieve ZAP Scan Results
-        run: |
-          docker cp $(docker ps -aqf "name=^zap$"):/zap/wrk/zap_report.html ./zap_report.html
       - name: Upload ZAP Scan Results
         uses: actions/upload-artifact@v3
         with:
           name: zap-scan-results
-          path: zap_report.html
+          path: zap-report.html
       - name: Stop Docker container
         if: always()
         run: docker stop todo-container
