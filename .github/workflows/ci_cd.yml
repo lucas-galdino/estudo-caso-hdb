@@ -13,24 +13,40 @@ permissions:
   contents: read
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}/todo-app:${{ github.sha }}
+
   test:
+    needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    - name: Build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        load: true
-        tags: todo-app:test
-    - name: Run tests in Docker
-      run: |
-        docker run --rm todo-app:test pytest todo_project/tests/
+      - uses: actions/checkout@v4
+      - name: Run tests in Docker
+        run: |
+          docker pull ghcr.io/${{ github.repository }}/todo-app:${{ github.sha }}
+          docker run --rm ghcr.io/${{ github.repository }}/todo-app:${{ github.sha }} pytest todo_project/tests/
 
   sast:
-    needs: test
+    needs: [build, test]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -44,7 +60,7 @@ jobs:
         targets: 'todo_project'
 
   dependency-check:
-    needs: test
+    needs: [build, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,20 +87,15 @@ jobs:
           path: ${{github.workspace}}/reports
   
   dast:
-    needs: test
+    needs: [build, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          load: true
-          tags: todo-app:latest
       - name: Run Docker container
-        run: docker run -d -p 5000:5000 --name todo-container todo-app:latest
+        run: |
+          docker pull ghcr.io/${{ github.repository }}/todo-app:${{ github.sha }}
+          docker run -d -p 5000:5000 --name todo-container ghcr.io/${{ github.repository }}/todo-app:${{ github.sha }}
+          sleep 20
       - name: Run ZAP Scan
         uses: zaproxy/action-full-scan@v0.10.0
         with:
@@ -101,7 +112,7 @@ jobs:
         run: docker stop todo-container
 
   open-pr-to-staging:
-    needs: [test, sast, dependency-check]
+    needs: [build, test, sast, dependency-check]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev' && success()
     steps:
@@ -118,7 +129,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-staging:
-    needs: [test, sast, dependency-check]
+    needs: [build, test, sast, dependency-check]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/staging'
     steps:
@@ -129,7 +140,7 @@ jobs:
         # Add your staging deployment steps here
 
   deploy-production:
-    needs: [test, sast, dependency-check]
+    needs: [build, test, sast, dependency-check]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
