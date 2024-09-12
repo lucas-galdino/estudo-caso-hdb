@@ -79,6 +79,7 @@ jobs:
         run: |
           docker build -t todo-app .
           docker run -d -p 5000:5000 --name todo-container todo-app
+          sleep 20
       - name: Run ZAP Scan
         uses: zaproxy/action-full-scan@v0.10.0
         with:
