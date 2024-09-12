@@ -119,7 +119,7 @@ jobs:
               issue_number: ${{ steps.create-pr.outputs.pr_number }},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Review environment created for PR from dev to staging'
+              body: 'Review environment created'
             })
 
   create-review-env:
@@ -141,7 +141,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Review environment created for PR to staging'
+              body: 'Review environment created'
             })
 
   dast:
@@ -161,3 +161,43 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: false
           allow_issue_writing: false
+          
+  deploy-staging:
+    needs: dast
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy staging
+        run: |
+          echo "Deploy app to staging"
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy prod
+        run: |
+          echo "Deploy app to prod"
+
+  post-deployment-monitoring:
+    runs-on: ubuntu-latest
+    needs: deploy-prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Prometheus and Grafana
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y prometheus grafana
+
+      - name: Configure Monitoring
+        run: |
+          echo "Prometheus"
+          echo "Grafana"
+
+      - name: Start Monitoring Services
+        run: |
+          sudo systemctl start prometheus
+          sudo systemctl start grafana-server
