@@ -69,10 +69,10 @@ jobs:
         with:
           name: Dependency-Check Report
           path: ${{github.workspace}}/reports
-
-    dast:
-      runs-on: ubuntu-latest
-      steps:
+  
+  dast:
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v4
       - name: Build and run Docker container
         run: |
