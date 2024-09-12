@@ -80,7 +80,7 @@ jobs:
           docker build -t todo-app .
           docker run -d -p 5000:5000 --name todo-container todo-app
       - name: Run ZAP Scan
-        uses: zaproxy/action-full-scan@v0.9.0
+        uses: zaproxy/action-full-scan@v0.10.0
         with:
           target: 'http://localhost:5000'
           fail_action: false
@@ -91,8 +91,9 @@ jobs:
           name: zap-scan-results
           path: zap_report.html
       - name: Stop Docker container
+        if: always()
         run: docker stop todo-container
-        
+
   open-pr-to-staging:
     needs: [test, sast, dependency-check]
     runs-on: ubuntu-latest
