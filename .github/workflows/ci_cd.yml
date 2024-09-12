@@ -102,6 +102,7 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: false
           allow_issue_writing: false
+          cmd_options: '-r html'
       - name: Upload ZAP Scan Results
         uses: actions/upload-artifact@v3
         with:
